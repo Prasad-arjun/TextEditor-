@@ -161,4 +161,5 @@ button5.pack(side=RIGHT, padx=10,pady= 10)
 
 root.rowconfigure(2, weight=5)
 
+root.state("zoomed")
 root.mainloop()
