@@ -3,9 +3,10 @@ from tkinter import *
 from tkinter import PhotoImage
 from tkinter import Canvas
 from tkinter import ttk
+from tkinter import colorchooser
 from PIL import Image, ImageTk
 from tkinter import filedialog
-from tkinter import messagebox 
+from tkinter import messagebox
 import tkinter as tk
 root = Tk()
 
@@ -37,17 +38,19 @@ def resize_icon(path, width, height):
 # show tooltip
 
 
-#---------------------------File menu functions start --------------------------------
+# ---------------------------File menu functions start --------------------------------
 # file types
 ftypes = [("Text file", ".txt"), ("Python file", ".py"), ("All Files", "*.*")]
 
-# file open method
+# file open method start
+
+
 def file_open():
     file_path = filedialog.askopenfilename(
         title="Open File", defaultextension=".txt", filetypes=ftypes)
-    
+
     if not file_path:
-        messagebox.showinfo("INFO", "Operation aborted")
+        messagebox.showinfo("Alert", "Operation cancelled")
         return
 
     try:
@@ -55,15 +58,83 @@ def file_open():
             content = file.read()
             text_area.delete(1.0, tk.END)  # Clear previous content
             text_area.insert(1.0, content)
+            file.close()
     except Exception as e:
         messagebox.showerror("Error", f"Error opening file: {str(e)}")
+# file open method end
+
+# new file start
 
 
+def new_file():
+    text_area.delete(1.0, tk.END)   # Clear previous content
 
 
-#---------------------------File menu functions end --------------------------------
+# new file end
+
+# save file start
+
+def save_file_command():
+    """
+    Save the content of the text area to a file.
+
+    If the content is empty, display an alert.
+    Prompt the user to select a file path to save the content.
+    If the user cancels the operation, display an alert.
+    Otherwise, write the content to the selected file.
+
+    Raises:
+        Exception: If there is an error saving the file.
+
+    Returns:
+        None
+    """
+    content = text_area.get(1.0, tk.END)
+    if len(content.strip()) == 0:
+        messagebox.showinfo("Alert", "Nothing to save")
+        return
+
+    try:
+        file_path = filedialog.asksaveasfilename(
+            title="Save File", defaultextension=".txt", filetypes=ftypes)
+
+        if not file_path:
+            messagebox.showinfo("Alert", "Operation cancelled")
+        else:
+            with open(file_path, "rw", encoding="utf-8") as file:
+                content = text_area.get(1.0, tk.END)
+                file.write(content)
+                file.close()
+    except Exception as e:
+        messagebox.showerror("Error", f"Error saving file: {str(e)}")
+
+# save file end
+
+# font style fuctions start
 
 
+def change_font_style(fs):
+    selceted_text = text_area.tag_ranges("sel")
+    if fs == "bold" and selceted_text:
+        text_area.tag_add("bold", "sel.first", "sel.last")
+        text_area.tag_configure("bold", font="arial 11 bold")
+    elif fs == "italic" and selceted_text:
+        text_area.tag_add("italic", "sel.first", "sel.last")
+        text_area.tag_configure("italic", font="arial 11 italic")
+    elif fs == "underline" and selceted_text:
+        text_area.tag_add("underline", "sel.first", "sel.last")
+        text_area.tag_configure("underline", font="arial 11 underline")
+    elif fs == "fontColor" and selceted_text:
+        color = colorchooser.askcolor()
+        text_area.tag_add("fontColor", "sel.first", "sel.last")
+        text_area.tag_configure("fontColor", foreground=color[1])
+    else:
+        messagebox.showinfo("Alert", "No text selected")
+
+# font style fuctions end
+
+
+# ---------------------------File menu functions end --------------------------------
 icon_width = 24
 icon_height = 24
 new_page = resize_icon(r"utils\New.png", icon_width, icon_height)
@@ -101,13 +172,13 @@ color_code = "#E5E1DA"
 menu_bar = Frame(root, bg=color_code, relief="raised")
 
 # Create File menu
-button_new_page = Button(menu_bar, image=new_page )
+button_new_page = Button(menu_bar, image=new_page, command=new_file)
 button_new_page.grid(row=0, column=0, padx=10.5, pady=10.5)
 
-button_open_file = Button(menu_bar, image=open_file,command=file_open)
+button_open_file = Button(menu_bar, image=open_file, command=file_open)
 button_open_file.grid(row=0, column=1, padx=10.5, pady=10.5)
 
-button_save_file = Button(menu_bar, image=save_file)
+button_save_file = Button(menu_bar, image=save_file, command=save_file_command)
 button_save_file.grid(row=0, column=2, padx=10.5, pady=10.5)
 
 button_save_as_file = Button(menu_bar, image=save_as_file)
@@ -131,16 +202,20 @@ edit_button_paste.grid(row=0, column=8, padx=10.5, pady=10.5)
 separator2 = ttk.Separator(menu_bar, orient="vertical")
 separator2.grid(row=0, column=9, sticky="ns", padx=10.5, pady=10.5)
 
-button_font = Button(menu_bar, image=change_font)
+button_font = Button(menu_bar, image=change_font,
+                     command=lambda: change_font_style("fontColor"))
 button_font.grid(row=0, column=10, padx=10.5, pady=10.5)
 
-button_bold = Button(menu_bar, image=change_bold)
+button_bold = Button(menu_bar, image=change_bold,
+                     command=lambda: change_font_style("bold"))
 button_bold.grid(row=0, column=11, padx=10.5, pady=10.5)
 
-button_Italic = Button(menu_bar, image=change_italic)
+button_Italic = Button(menu_bar, image=change_italic,
+                       command=lambda: change_font_style("italic"))
 button_Italic.grid(row=0, column=12, padx=10.5, pady=10.5)
 
-button_underline = Button(menu_bar, image=change_underline)
+button_underline = Button(menu_bar, image=change_underline,
+                          command=lambda: change_font_style("underline"))
 button_underline.grid(row=0, column=13, padx=10.5, pady=10.5)
 
 separator3 = ttk.Separator(menu_bar, orient="vertical")
@@ -221,5 +296,3 @@ root.rowconfigure(3, weight=1)
 
 root.state("zoomed")
 root.mainloop()
-
-
